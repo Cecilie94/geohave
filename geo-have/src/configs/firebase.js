@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 // import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -7,14 +7,15 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your web app's Firebase configuration
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCbJSQtO8pt8b3rYT1awo1Q1ahjouQTutw",
-  authDomain: "geo-have.firebaseapp.com",
-  projectId: "geo-have",
-  storageBucket: "geo-have.appspot.com",
-  messagingSenderId: "698325287904",
-  appId: "1:698325287904:web:5712b1bcc02b13a80ba185",
-  measurementId: "G-5DGWFQV789",
+  apiKey: "AIzaSyBRBKhIFryLrOlrAV953Gr-N3ct77LlbBg",
+  authDomain: "mdf-geohave.firebaseapp.com",
+  projectId: "mdf-geohave",
+  storageBucket: "mdf-geohave.appspot.com",
+  messagingSenderId: "277572171229",
+  appId: "1:277572171229:web:69e273a762358d6fa53234",
 };
 
 // Initialize Firebase
@@ -25,6 +26,4 @@ initializeApp(firebaseConfig);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export{
-  db
-}
+export { db };
