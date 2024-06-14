@@ -32,12 +32,22 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from 'vue-router';
 import { signUp } from "@/services/AuthService";
 
 const email = ref("");
 const password = ref("");
-const onSubmitForm = () => {
-  signUp(email.value, password.value);
+const router = useRouter();
+
+const onSubmitForm = async () => {
+  try {
+    await signUp(email.value, password.value);
+    // Redirect to landing page after successful signup
+    router.push('/');
+  } catch (error) {
+    console.error("Error during sign up:", error);
+    // Handle error (e.g., show a notification to the user)
+  }
 };
 </script>
 
