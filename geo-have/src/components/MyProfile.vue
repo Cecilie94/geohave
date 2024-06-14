@@ -1,18 +1,22 @@
 <template>
-  <div>
+  <div v-if="user">
     <NavBar />
-  </div>
-  <div class="container">
-    <button @click="showModal = true" class="delete-button">Delete User</button>
-  </div>
-
-  <div v-if="showModal" class="modal">
-    <div class="modal-content">
-      <h2>Bekræft</h2>
-      <p>Er du sikker på du vil slette din bruger?</p>
-      <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
-      <button @click="showModal = false" class="cancel-button">Fortryd</button>
+    <div class="container">
+      <button @click="showModal = true" class="delete-button">Delete User</button>
     </div>
+
+    <div v-if="showModal" class="modal">
+      <div class="modal-content">
+        <h2>Bekræft</h2>
+        <p>Er du sikker på du vil slette din bruger?</p>
+        <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
+        <button @click="showModal = false" class="cancel-button">Fortryd</button>
+      </div>
+    </div>
+  </div>
+  <div v-else>
+    <p>Du skal være logget ind for at se denne side.</p>
+    <!-- Optionally, you can add a login link or button here -->
   </div>
 </template>
 
@@ -28,6 +32,12 @@ export default {
     const router = useRouter();
     const showModal = ref(false);
 
+    // Check authentication state on component mount
+    // This ensures that the user is redirected if not authenticated
+    if (!user.value) {
+      router.push('/'); // Redirect to landing page if not authenticated
+    }
+
     const confirmDelete = () => {
       if (user.value) {
         deleteUser(user.value)
@@ -36,7 +46,6 @@ export default {
             // Log out the user
             signOut(auth)
               .then(() => {
-                // Redirect to landing page
                 router.push('/');
               })
               .catch((signOutError) => {
@@ -53,10 +62,18 @@ export default {
     };
 
     return {
+      user,
       showModal,
       confirmDelete,
     };
   },
+  mounted() {
+    // Ensure the user is authenticated when component mounts
+    const auth = getAuth();
+    if (!auth.currentUser) {
+      this.$router.push('/'); // Redirect to landing page if not authenticated
+    }
+  }
 };
 </script>
 
