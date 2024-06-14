@@ -13,7 +13,7 @@
       <div v-if="showModal" class="modal">
         <div class="modal-content">
           <h2>Bekræft</h2>
-          <p class="modal-text">Er du sikker på du vil slette din bruger?</p>
+          <p>Er du sikker på du vil slette din bruger?</p>
           <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
           <button @click="showModal = false" class="cancel-button">Fortryd</button>
         </div>
@@ -138,7 +138,7 @@ h1{
 }
 
 .modal-content {
-  background-color: #FEF9EA;
+  background-color: white;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -146,14 +146,10 @@ h1{
   width: 80%;
 }
 
-.modal-text{
-  margin-bottom: 10px;
-}
-
 .confirm-button {
   background-color: #e74c3c;
   color: white;
-  padding: 7px 15px;
+  padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -165,7 +161,7 @@ h1{
 .cancel-button {
   background-color: #95a5a6;
   color: white;
-  padding: 7px 15px;
+  padding: 10px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
