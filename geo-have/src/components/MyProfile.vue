@@ -2,17 +2,18 @@
   <div v-if="user">
     <NavBar />
     <div class="container">
-      <button @click="showModal = true" class="delete-button">Delete User</button>
-    </div>
+      <button @click="showModal = true" class="delete-button">
+        <img src="../assets/icons/delete_icon.png" alt="Delete User" class="delete-icon">
+      </button>    </div>
 
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <h2>Bekræft</h2>
-        <p>Er du sikker på du vil slette din bruger?</p>
-        <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
-        <button @click="showModal = false" class="cancel-button">Fortryd</button>
+      <div v-if="showModal" class="modal">
+        <div class="modal-content">
+          <h2>Bekræft</h2>
+          <p>Er du sikker på du vil slette din bruger?</p>
+          <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
+          <button @click="showModal = false" class="cancel-button">Fortryd</button>
+        </div>
       </div>
-    </div>
   </div>
   <div v-else>
     <p>Du skal være logget ind for at se denne side.</p>
@@ -82,20 +83,28 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100vh;
-  text-align: center;
+  position: fixed; /* Fixed positioning to make it relative to the viewport */
+  bottom: 0; /* Align to the bottom */
+  padding: 20px; /* Add padding for content spacing */
 }
 
 .delete-button {
   background-color: #e74c3c;
-  color: white;
-  padding: 10px 20px;
+  padding: 0; /* Remove default padding */
   border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
+  border-radius: 15px;
+  position: relative; /* Ensure relative positioning for absolute positioning of image */
+  overflow: hidden; /* Ensure overflow is hidden */
+  width: 50px; /* Set desired width */
+  height: 50px; /* Set desired height */
+}
+
+.delete-icon {
+  width: 100%; /* Ensure image takes full width of button */
+  object-fit: cover; /* Maintain aspect ratio and cover the button */
+  position: absolute; /* Position image absolutely */
+  bottom: 0; /* Position at bottom */
+  right: 0;
 }
 
 .delete-button:hover {
