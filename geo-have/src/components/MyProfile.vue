@@ -3,13 +3,18 @@
     <NavBar />
     <div class="information-container">
       <h1 class="overskrift">Min profil</h1>
-      <p>Email</p>
+      <p class="info-title">E-mail:</p>
         <p>{{ user.email }}</p>
-      <p>Oprettelse</p>
+      <p class="info-title">Oprettelse:</p>
         <p>{{ formatDate(user.metadata.creationTime) }}</p>
+        <p class="info-title">Historik:</p>
 
     </div>
     <div class="container">
+      <button @click="showEditEmailModal = true" class="edit-button">
+          <img src="../assets/icons/settings-edit.png" alt="Edit Email" class="edit-icon">
+        </button>
+        
       <button @click="showModal = true" class="delete-button">
         <img src="../assets/icons/delete_icon.png" alt="Delete User" class="delete-icon">
       </button>    
@@ -53,6 +58,7 @@ export default {
     const showModal = ref(false);
     const showReauthModal = ref(false);
     const reauthPassword = ref('');
+    const newEmail = ref('');
 
     // Check authentication state on component mount
     if (!user.value) {
@@ -131,38 +137,59 @@ export default {
 </script>
 
 <style scoped>
+
+.info-title {
+  color: #000;
+  font-size: 16px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
 .overskrift{
   color: #000;
   font-family: "Kameron", serif;
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 20px;
+  margin-top: 35px;
 }
 
 .information-container{
   margin-left: 20px;
   margin-top: 20px;
 }
+
 .container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; 
   align-items: center;
-  position: fixed; /* Fixed positioning to make it relative to the viewport */
-  bottom: 0; /* Align to the bottom */
-  padding: 20px; /* Add padding for content spacing */
+  position: fixed; 
+  bottom: 0; 
+  padding: 20px; 
+}
+
+.edit-button,
+.delete-button {
+  padding: 0; 
+  border: none;
+  border-radius: 15px;
+  position: relative; 
+  overflow: hidden; 
+  width: 50px; 
+  height: 50px; 
+  margin: 5px;
+}
+
+.edit-button {
+  background-color: #72A6FF; 
 }
 
 .delete-button {
-  background-color: #FF7272;
-  padding: 0; /* Remove default padding */
-  border: none;
-  border-radius: 15px;
-  position: relative; /* Ensure relative positioning for absolute positioning of image */
-  overflow: hidden; /* Ensure overflow is hidden */
-  width: 50px; /* Set desired width */
-  height: 50px; /* Set desired height */
+  background-color: #FF7272; 
 }
 
+.edit-icon,
 .delete-icon {
   width: 100%; /* Ensure image takes full width of button */
   object-fit: cover; /* Maintain aspect ratio and cover the button */
