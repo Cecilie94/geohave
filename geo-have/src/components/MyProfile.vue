@@ -1,7 +1,9 @@
 <template>
   <div>
     <NavBar />
-    <button @click="deleteUser">Delete User</button>
+  </div>
+  <div class="container">
+    <button @click="deleteUser" class="delete-button">Delete User</button>
   </div>
 </template>
 
@@ -47,4 +49,32 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; 
+  text-align: center;
+}
+
+.delete-button {
+  background-color: #e74c3c; 
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.delete-button:hover {
+  background-color: #c0392b;
+}
+
+.delete-button:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+}
 </style>
