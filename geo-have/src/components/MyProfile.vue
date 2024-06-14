@@ -3,7 +3,16 @@
     <NavBar />
   </div>
   <div class="container">
-    <button @click="deleteUser" class="delete-button">Delete User</button>
+    <button @click="showModal = true" class="delete-button">Delete User</button>
+  </div>
+
+  <div v-if="showModal" class="modal">
+    <div class="modal-content">
+      <h2>Bekræft</h2>
+      <p>Er du sikker på du vil slette din bruger?</p>
+      <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
+      <button @click="showModal = false" class="cancel-button">Fortryd</button>
+    </div>
   </div>
 </template>
 
@@ -17,8 +26,9 @@ export default {
     const auth = getAuth();
     const user = ref(auth.currentUser);
     const router = useRouter();
+    const showModal = ref(false);
 
-    const deleteUserAccount = () => {
+    const confirmDelete = () => {
       if (user.value) {
         deleteUser(user.value)
           .then(() => {
@@ -39,10 +49,12 @@ export default {
       } else {
         console.error("No user is currently signed in");
       }
+      showModal.value = false;
     };
 
     return {
-      deleteUser: deleteUserAccount,
+      showModal,
+      confirmDelete,
     };
   },
 };
@@ -54,12 +66,12 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh; 
+  height: 100vh;
   text-align: center;
 }
 
 .delete-button {
-  background-color: #e74c3c; 
+  background-color: #e74c3c;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -76,5 +88,57 @@ export default {
 .delete-button:focus {
   outline: none;
   box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 400px;
+  width: 80%;
+}
+
+.confirm-button {
+  background-color: #e74c3c;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-button:hover {
+  background-color: #c0392b;
+}
+
+.cancel-button {
+  background-color: #95a5a6;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-button:hover {
+  background-color: #7f8c8d;
 }
 </style>
