@@ -37,6 +37,9 @@
         <router-link to="/skattejagt">
           <li>Skattejagt</li>
         </router-link>
+        <router-link to="/minprofil">
+          <li>Min profil</li>
+        </router-link>
         <li v-if="authenticated" @click="signOut">Log ud</li>
       </ul>
     </nav>
