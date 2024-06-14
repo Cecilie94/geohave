@@ -2,10 +2,7 @@
   <div v-if="user">
     <NavBar />
     <div class="container">
-      <h1>Min Profil</h1>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Oprettet:</strong> {{ creationTime }}</p>
-      <button @click="showModal = true" class="delete-button">Slet Bruger</button>
+      <button @click="showModal = true" class="delete-button">Delete User</button>
     </div>
 
     <div v-if="showModal" class="modal">
@@ -23,84 +20,71 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
+<script>
+import { ref } from 'vue';
 import { getAuth, deleteUser, signOut } from "firebase/auth";
 import { useRouter } from 'vue-router';
 
-const auth = getAuth();
-const user = ref(auth.currentUser);
-const router = useRouter();
-const showModal = ref(false);
-let creationTime = '';
+export default {
+  setup() {
+    const auth = getAuth();
+    const user = ref(auth.currentUser);
+    const router = useRouter();
+    const showModal = ref(false);
 
-// Check authentication state on component mount
-onMounted(() => {
-  if (!user.value) {
-    router.push('/'); // Redirect to landing page if not authenticated
-  } else {
-    // Get user metadata to get creation time
-    auth.currentUser.getIdTokenResult()
-      .then((idTokenResult) => {
-        creationTime = new Date(idTokenResult.creationTime).toLocaleString();
-      })
-      .catch((error) => {
-        console.error("Error getting user metadata:", error);
-      });
-  }
-});
+    // Check authentication state on component mount
+    // This ensures that the user is redirected if not authenticated
+    if (!user.value) {
+      router.push('/'); // Redirect to landing page if not authenticated
+    }
 
-const confirmDelete = () => {
-  if (user.value) {
-    deleteUser(user.value)
-      .then(() => {
-        console.log("User Account Deleted Successfully");
-        // Log out the user
-        signOut(auth)
+    const confirmDelete = () => {
+      if (user.value) {
+        deleteUser(user.value)
           .then(() => {
-            router.push('/');
+            console.log("User Account Deleted Successfully");
+            // Log out the user
+            signOut(auth)
+              .then(() => {
+                router.push('/');
+              })
+              .catch((signOutError) => {
+                console.error("Error signing out:", signOutError);
+              });
           })
-          .catch((signOutError) => {
-            console.error("Error signing out:", signOutError);
+          .catch((error) => {
+            console.error("Error deleting user:", error);
           });
-      })
-      .catch((error) => {
-        console.error("Error deleting user:", error);
-      });
-  } else {
-    console.error("No user is currently signed in");
-  }
-  showModal.value = false;
-};
+      } else {
+        console.error("No user is currently signed in");
+      }
+      showModal.value = false;
+    };
 
+    return {
+      user,
+      showModal,
+      confirmDelete,
+    };
+  },
+  mounted() {
+    // Ensure the user is authenticated when component mounts
+    const auth = getAuth();
+    if (!auth.currentUser) {
+      this.$router.push('/'); // Redirect to landing page if not authenticated
+    }
+  }
+};
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
-
-h1 {
-  font-family: "Open Sans", sans-serif;
-  font-weight: 700;
-  margin-top: 50px;
-  font-size: 24px;
-}
-
-p{
-  font-size: 12px;
-  font-family: "Open Sans", sans-serif;
-  font-weight: 300;
-  font-size: 12px;
-  space-between: 10px;
-}
-
-
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100vh;
   text-align: center;
-  margin-top: 25px;
 }
 
 .delete-button {
@@ -112,7 +96,6 @@ p{
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s ease;
-  margin-top: 20px;
 }
 
 .delete-button:hover {
