@@ -74,9 +74,9 @@ const router = createRouter({
       component: () => import("@/views/OverlayView.vue"),
     },
     {
-      path: "/minprofil",
+      path: "/myprofile",
       name: "minprofil",
-      component: () => import("@/views/MinProfilView.vue"),
+      component: () => import("@/views/MyProfileView.vue"),
     }
   ],
 });
