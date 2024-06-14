@@ -4,16 +4,27 @@
     <div class="container">
       <button @click="showModal = true" class="delete-button">
         <img src="../assets/icons/delete_icon.png" alt="Delete User" class="delete-icon">
-      </button>    </div>
+      </button>    
+    </div>
 
-      <div v-if="showModal" class="modal">
-        <div class="modal-content">
-          <h2>Bekræft</h2>
-          <p>Er du sikker på du vil slette din bruger?</p>
-          <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
-          <button @click="showModal = false" class="cancel-button">Fortryd</button>
-        </div>
+    <div v-if="showModal" class="modal">
+      <div class="modal-content">
+        <h2>Bekræft</h2>
+        <p>Er du sikker på du vil slette din bruger?</p>
+        <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
+        <button @click="showModal = false" class="cancel-button">Fortryd</button>
       </div>
+    </div>
+
+    <div v-if="showReauthModal" class="modal">
+      <div class="modal-content">
+        <h2>Reauthenticering påkrævet</h2>
+        <p>Indtast din adgangskode for at bekræfte din identitet.</p>
+        <input type="password" v-model="reauthPassword" placeholder="Adgangskode">
+        <button @click="reauthenticate" class="confirm-button">Bekræft</button>
+        <button @click="showReauthModal = false" class="cancel-button">Fortryd</button>
+      </div>
+    </div>
   </div>
   <div v-else>
     <p>Du skal være logget ind for at se denne side.</p>
@@ -23,7 +34,7 @@
 
 <script>
 import { ref } from 'vue';
-import { getAuth, deleteUser, signOut } from "firebase/auth";
+import { getAuth, deleteUser, signOut, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { useRouter } from 'vue-router';
 
 export default {
@@ -32,12 +43,29 @@ export default {
     const user = ref(auth.currentUser);
     const router = useRouter();
     const showModal = ref(false);
+    const showReauthModal = ref(false);
+    const reauthPassword = ref('');
 
     // Check authentication state on component mount
-    // This ensures that the user is redirected if not authenticated
     if (!user.value) {
       router.push('/'); // Redirect to landing page if not authenticated
     }
+
+    const reauthenticate = () => {
+      if (user.value && reauthPassword.value) {
+        const credential = EmailAuthProvider.credential(user.value.email, reauthPassword.value);
+        reauthenticateWithCredential(user.value, credential)
+          .then(() => {
+            showReauthModal.value = false;
+            confirmDelete();
+          })
+          .catch((error) => {
+            console.error("Error reauthenticating user:", error);
+          });
+      } else {
+        console.error("Reauthentication failed: no user or password");
+      }
+    };
 
     const confirmDelete = () => {
       if (user.value) {
@@ -54,7 +82,11 @@ export default {
               });
           })
           .catch((error) => {
-            console.error("Error deleting user:", error);
+            if (error.code === 'auth/requires-recent-login') {
+              showReauthModal.value = true;
+            } else {
+              console.error("Error deleting user:", error);
+            }
           });
       } else {
         console.error("No user is currently signed in");
@@ -65,7 +97,10 @@ export default {
     return {
       user,
       showModal,
+      showReauthModal,
+      reauthPassword,
       confirmDelete,
+      reauthenticate,
     };
   },
   mounted() {
@@ -129,7 +164,7 @@ export default {
 }
 
 .modal-content {
-  background-color: white;
+  background-color: #FEF9EA;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -140,31 +175,22 @@ export default {
 .confirm-button {
   background-color: #e74c3c;
   color: white;
-  padding: 10px 20px;
+  padding: 7px 15px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   margin-right: 10px;
-  transition: background-color 0.3s ease;
-}
-
-.confirm-button:hover {
-  background-color: #c0392b;
 }
 
 .cancel-button {
   background-color: #95a5a6;
   color: white;
-  padding: 10px 20px;
+  padding: 7px 15px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s ease;
 }
 
-.cancel-button:hover {
-  background-color: #7f8c8d;
-}
 </style>
