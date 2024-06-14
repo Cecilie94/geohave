@@ -1,6 +1,14 @@
 <template>
   <div v-if="user">
     <NavBar />
+    <div class="information-container">
+      <h1 class="overskrift">Min profil</h1>
+      <p>Email</p>
+        <p>{{ user.email }}</p>
+      <p>Oprettelse</p>
+        <p>{{ formatDate(user.metadata.creationTime) }}</p>
+
+    </div>
     <div class="container">
       <button @click="showModal = true" class="delete-button">
         <img src="../assets/icons/delete_icon.png" alt="Delete User" class="delete-icon">
@@ -94,6 +102,14 @@ export default {
       showModal.value = false;
     };
 
+    const formatDate = (timestamp) => {
+      const date = new Date(timestamp);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      return `${day}-${month}-${year}`;
+    };
+
     return {
       user,
       showModal,
@@ -101,6 +117,7 @@ export default {
       reauthPassword,
       confirmDelete,
       reauthenticate,
+      formatDate,
     };
   },
   mounted() {
@@ -114,6 +131,18 @@ export default {
 </script>
 
 <style scoped>
+.overskrift{
+  color: #000;
+  font-family: "Kameron", serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.information-container{
+  margin-left: 20px;
+  margin-top: 20px;
+}
 .container {
   display: flex;
   flex-direction: column;
@@ -124,7 +153,7 @@ export default {
 }
 
 .delete-button {
-  background-color: #e74c3c;
+  background-color: #FF7272;
   padding: 0; /* Remove default padding */
   border: none;
   border-radius: 15px;
@@ -140,15 +169,6 @@ export default {
   position: absolute; /* Position image absolutely */
   bottom: 0; /* Position at bottom */
   right: 0;
-}
-
-.delete-button:hover {
-  background-color: #c0392b;
-}
-
-.delete-button:focus {
-  outline: none;
-  box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
 }
 
 .modal {
@@ -173,7 +193,7 @@ export default {
 }
 
 .confirm-button {
-  background-color: #e74c3c;
+  background-color: #FF7272;
   color: white;
   padding: 7px 15px;
   border: none;
