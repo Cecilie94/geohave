@@ -1,7 +1,11 @@
 <template>
   <div v-if="user">
     <NavBar />
-    <div class="container">
+    <div class="information-box">
+      <h1>Min profil</h1>
+
+    </div>
+    <div class="delete-container">
       <button @click="showModal = true" class="delete-button">
         <img src="../assets/icons/delete_icon.png" alt="Delete User" class="delete-icon">
       </button>    </div>
@@ -79,7 +83,21 @@ export default {
 </script>
 
 <style scoped>
-.container {
+
+.information-box{
+  margin-left: 20px;
+  margin-top: 20px;
+
+}
+
+h1{
+  color: #000;
+  font-size: 24px;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 700;
+}
+
+.delete-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -105,15 +123,6 @@ export default {
   position: absolute; /* Position image absolutely */
   bottom: 0; /* Position at bottom */
   right: 0;
-}
-
-.delete-button:hover {
-  background-color: #c0392b;
-}
-
-.delete-button:focus {
-  outline: none;
-  box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
 }
 
 .modal {
@@ -149,10 +158,6 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.confirm-button:hover {
-  background-color: #c0392b;
-}
-
 .cancel-button {
   background-color: #95a5a6;
   color: white;
@@ -162,9 +167,5 @@ export default {
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s ease;
-}
-
-.cancel-button:hover {
-  background-color: #7f8c8d;
 }
 </style>
