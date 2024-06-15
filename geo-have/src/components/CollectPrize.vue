@@ -35,7 +35,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 const queryParams = new URLSearchParams(window.location.search);
 // Accessing query parameter named 'paramName' as a number
@@ -43,6 +43,20 @@ const idInQuery = parseInt(queryParams.get("rewardId"));
 const rewardId = ref(isNaN(idInQuery) ? 0 : idInQuery);
 
 const router = useRouter();
+
+onMounted(() => {
+  //henter token fra local storage
+  const item = sessionStorage.getItem("rewardToCollect");
+
+  //hvis token ikke er sat eller at id'et ikke stemmer over ens, navigeres man til home
+  if(item !== idInQuery + "") {
+    router.push({ name: "home" });
+  }
+  //Ellers fjernes tokenen fra local storage da den nu er brugt op
+  else {
+    sessionStorage.removeItem("rewardToCollect");
+  }
+})
 
 const goToHome = () => {
   router.push({ name: "home" });

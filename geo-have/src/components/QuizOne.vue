@@ -119,6 +119,7 @@ const finishQuiz = () => {
   const isCorrect =
     getCurrentQuestion.value.selected === getCurrentQuestion.value.answer;
   if (isCorrect) {
+    sessionStorage.setItem("earnPoints", "true");
     router.push("/quiz/points");
   } else {
     router.push("/"); // Navigate to map 2 if answer is incorrect

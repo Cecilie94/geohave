@@ -64,6 +64,8 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+//tilføje import 
+import { useRouter } from "vue-router";
 
 const PointShopItemsOnline = ref([
   {
@@ -99,6 +101,9 @@ const PointShopTransactionsOnline = ref([]);
 const UserPointsOnline = ref(0);
 const UserId = ref("");
 const UserInfoRefId = ref("");
+
+// tilføjelse af router til at navigere rundt til andre sider.//
+const router = useRouter();
 
 onMounted(async () => {
   const auth = getAuth();
@@ -139,44 +144,6 @@ onMounted(async () => {
       PointShopTransactionsOnline.value.push(doc.data());
     }
   });
-  // //old
-  // const auth = getAuth();
-  // onAuthStateChanged(auth, async (user) => {
-  //   if (user) {
-  //     UserId.value = user.uid;
-
-  //     const querySnapshotPointShopItem = await getDocs(
-  //       collection(db, "PointShopItem")
-  //     );
-  //     PointShopItemsOnline.value = [];
-  //     querySnapshotPointShopItem.forEach((doc) => {
-  //       console.log(doc.id, "=>", doc.data());
-  //       const item = doc.data();
-  //       item.id = doc.id;
-  //       PointShopItemsOnline.value.push(item);
-  //     });
-
-  //     // Fetch single user document
-  //     const userDocRef = doc(db, "User", UserId.value);
-  //     const userDoc = await getDoc(userDocRef); // Use getDoc for a single document
-  //     if (userDoc.exists()) {
-  //       UserPointsOnline.value = userDoc.data().Points;
-  //     }
-
-  //     const querySnapshotPointShopTransactions = await getDocs(
-  //       collection(db, "UserPointShopTransaction")
-  //     );
-  //     querySnapshotPointShopTransactions.forEach((doc) => {
-  //       console.log(doc.id, "=>", doc.data());
-  //       if (doc.data().UserId === UserId.value) {
-  //         PointShopTransactionsOnline.value.push(doc.data());
-  //       }
-  //     });
-  //   } else {
-  //     // No user is signed in.
-  //     // You can redirect the user to the login page or show a message.
-  //   }
-  // });
 });
 
 const displayPopup = ref(false);
@@ -208,8 +175,10 @@ function makeTransaction(pointShopItemId, cost, max) {
       UserId: UserId.value,
     });
 
-    // Assuming you have a router set up and imported correctly.
-    // router.push({ name: "Collect", query: { rewardId: pointShopItemId } });
+    //laver et token til når man kommer over på collect siden
+    sessionStorage.setItem("rewardToCollect", pointShopItemId + "")
+// her skifte det til collect side, hvor den tilføje id til den ting man har købt // 
+    router.push({ name: "Collect", query: { rewardId: pointShopItemId } });
   } else {
     displayPopup.value = true;
   }

@@ -122,6 +122,8 @@ const finishQuiz = () => {
   const isCorrect =
     getCurrentQuestion.value.selected === getCurrentQuestion.value.answer;
   if (isCorrect) {
+    //tilføjet token til at gå til collect point siden
+    sessionStorage.setItem("earnPoints", "true");
     router.push("/quiz/points"); // Navigate to PointsView.vue
   } else {
     router.push("/pointshop"); // Navigate to Pointshop

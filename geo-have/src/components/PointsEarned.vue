@@ -1,14 +1,16 @@
 <script setup>
-import router from "@/router";
 import { ref, onMounted, watch } from "vue";
 import ConfettiExplosion from "vue-confetti-explosion";
 import { db } from "@/configs/firebase";
 import { collection, updateDoc, doc, getDocs } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "vue-router";
 
 const UserId = ref("");
 const UserInfoRefId = ref("");
 const UserPointsOnline = ref(0);
+
+const router = useRouter();
 
 const goToNextTask = async () => {
   try {
@@ -45,6 +47,17 @@ const updatePoints = async () => {
 };
 
 onMounted(() => {
+  const item = sessionStorage.getItem("earnPoints");
+
+  //hvis modtag point token ikke er sat navigeres man til home
+  if(item !== "true") {
+    router.push({ name: "skattejagt" });
+  }
+  //Ellers fjernes tokenen fra local storage da den nu er brugt op
+  else {
+    sessionStorage.removeItem("earnPoints");
+  }
+
   // Start the animation
   updatePoints();
   const auth = getAuth();
