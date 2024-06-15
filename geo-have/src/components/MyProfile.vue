@@ -4,9 +4,9 @@
     <div class="information-container">
       <h1 class="overskrift">Min profil</h1>
       <p class="info-title">E-mail:</p>
-        <p>{{ user.email }}</p>
+      <p>{{ user.email }}</p>
       <p class="info-title">Oprettet:</p>
-        <p>{{ formatDate(user.metadata.creationTime) }}</p>
+      <p>{{ formatDate(user.metadata.creationTime) }}</p>
       <p class="info-title">Pointoversigt:</p>
     </div>
     <div class="container">
@@ -46,10 +46,12 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { getAuth, deleteUser, signOut, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { useRouter } from 'vue-router';
+import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 
 export default {
   setup() {
     const auth = getAuth();
+    const db = getFirestore();
     const user = ref(null);
     const router = useRouter();
     const showModal = ref(false);
@@ -57,19 +59,30 @@ export default {
     const reauthPassword = ref('');
     let unsubscribe = null;
 
-    onMounted(async () => {
-      auth.onAuthStateChanged(async (currentUser) => {
+    onMounted(() => {
+      auth.onAuthStateChanged(currentUser => {
         if (currentUser) {
           user.value = currentUser;
-          if (unsubscribe) {
-            unsubscribe();
-          }
+          if (unsubscribe) unsubscribe();
           unsubscribe = watchUserPoints();
         } else {
           router.push('/');
         }
       });
     });
+
+    const watchUserPoints = () => {
+      if (user.value) {
+        const userDoc = doc(db, "users", user.value.uid);
+        return onSnapshot(userDoc, doc => {
+          if (doc.exists()) {
+            user.value.points = doc.data().points || 0;
+          } else {
+            console.error("No such document!");
+          }
+        });
+      }
+    };
 
     const reauthenticate = () => {
       if (user.value && reauthPassword.value) {
@@ -79,7 +92,7 @@ export default {
             showReauthModal.value = false;
             confirmDelete();
           })
-          .catch((error) => {
+          .catch(error => {
             console.error("Error reauthenticating user:", error);
           });
       } else {
@@ -93,27 +106,23 @@ export default {
           .then(() => {
             console.log("User Account Deleted Successfully");
             signOut(auth)
-              .then(() => {
-                router.push('/');
-              })
-              .catch((signOutError) => {
-                console.error("Error signing out:", signOutError);
-              });
+              .then(() => router.push('/'))
+              .catch(signOutError => console.error("Error signing out:", signOutError));
           })
-          .catch((error) => {
+          .catch(error => {
             if (error.code === 'auth/requires-recent-login') {
               showReauthModal.value = true;
             } else {
               console.error("Error deleting user:", error);
             }
           });
+        showModal.value = false;
       } else {
         console.error("No user is currently signed in");
       }
-      showModal.value = false;
     };
 
-    const formatDate = (timestamp) => {
+    const formatDate = timestamp => {
       const date = new Date(timestamp);
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -122,9 +131,7 @@ export default {
     };
 
     onUnmounted(() => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      if (unsubscribe) unsubscribe();
     });
 
     return {
@@ -149,7 +156,7 @@ export default {
   margin-top: 20px;
 }
 
-.overskrift{
+.overskrift {
   color: #000;
   font-family: "Kameron", serif;
   font-size: 24px;
@@ -158,7 +165,7 @@ export default {
   margin-top: 35px;
 }
 
-.information-container{
+.information-container {
   margin-left: 20px;
   margin-top: 20px;
 }
@@ -194,10 +201,10 @@ export default {
 
 .edit-icon,
 .delete-icon {
-  width: 100%; /* Ensure image takes full width of button */
-  object-fit: cover; /* Maintain aspect ratio and cover the button */
-  position: absolute; /* Position image absolutely */
-  bottom: 0; /* Position at bottom */
+  width: 100%; 
+  object-fit: cover; 
+  position: absolute; 
+  bottom: 0; 
   right: 0;
 }
 
@@ -222,7 +229,7 @@ export default {
   width: 80%;
 }
 
-.modal-text{
+.modal-text {
   margin-bottom: 15px;
 }
 
