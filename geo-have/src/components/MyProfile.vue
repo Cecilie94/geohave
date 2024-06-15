@@ -8,7 +8,6 @@
       <p class="info-title">Oprettet:</p>
         <p>{{ formatDate(user.metadata.creationTime) }}</p>
       <p class="info-title">Pointoversigt:</p>
-        <p>{{ points }}</p>
     </div>
     <div class="container">
       <button @click="showEditEmailModal = true" class="edit-button">
@@ -44,44 +43,33 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { getAuth, deleteUser, signOut, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { useRouter } from 'vue-router';
-import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export default {
   setup() {
     const auth = getAuth();
-    const db = getFirestore();
     const user = ref(null);
-    const points = ref(0);
     const router = useRouter();
     const showModal = ref(false);
     const showReauthModal = ref(false);
     const reauthPassword = ref('');
+    let unsubscribe = null;
 
     onMounted(async () => {
       auth.onAuthStateChanged(async (currentUser) => {
         if (currentUser) {
           user.value = currentUser;
-          await fetchUserPoints();
+          if (unsubscribe) {
+            unsubscribe();
+          }
+          unsubscribe = watchUserPoints();
         } else {
           router.push('/');
         }
       });
     });
-
-    const fetchUserPoints = async () => {
-      if (user.value) {
-        const userDoc = doc(db, "users", user.value.uid);
-        const userSnap = await getDoc(userDoc);
-        if (userSnap.exists()) {
-          points.value = userSnap.data().points || 0;
-        } else {
-          console.error("No such document!");
-        }
-      }
-    };
 
     const reauthenticate = () => {
       if (user.value && reauthPassword.value) {
@@ -133,9 +121,14 @@ export default {
       return `${day}-${month}-${year}`;
     };
 
+    onUnmounted(() => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    });
+
     return {
       user,
-      points,
       showModal,
       showReauthModal,
       reauthPassword,
@@ -148,7 +141,6 @@ export default {
 </script>
 
 <style scoped>
-
 .info-title {
   color: #000;
   font-size: 16px;
@@ -254,5 +246,4 @@ export default {
   cursor: pointer;
   font-size: 16px;
 }
-
 </style>
