@@ -5,25 +5,24 @@
       <h1 class="overskrift">Min profil</h1>
       <p class="info-title">E-mail:</p>
         <p>{{ user.email }}</p>
-      <p class="info-title">Oprettelse:</p>
+      <p class="info-title">Oprettet:</p>
         <p>{{ formatDate(user.metadata.creationTime) }}</p>
-        <p class="info-title">Historik:</p>
-
+      <p class="info-title">Pointoversigt:</p>
+        <p>{{ points }}</p>
     </div>
     <div class="container">
       <button @click="showEditEmailModal = true" class="edit-button">
-          <img src="../assets/icons/settings-edit.png" alt="Edit Email" class="edit-icon">
-        </button>
-        
+        <img src="../assets/icons/settings-edit.png" alt="Edit Email" class="edit-icon">
+      </button>
       <button @click="showModal = true" class="delete-button">
         <img src="../assets/icons/delete_icon.png" alt="Delete User" class="delete-icon">
-      </button>    
+      </button>
     </div>
 
     <div v-if="showModal" class="modal">
       <div class="modal-content">
         <h2>Bekræft</h2>
-        <p>Er du sikker på du vil slette din bruger?</p>
+        <p class="modal-text">Er du sikker på du vil slette din bruger?</p>
         <button @click="confirmDelete" class="confirm-button">Ja, slet</button>
         <button @click="showModal = false" class="cancel-button">Fortryd</button>
       </div>
@@ -32,7 +31,7 @@
     <div v-if="showReauthModal" class="modal">
       <div class="modal-content">
         <h2>Reauthenticering påkrævet</h2>
-        <p>Indtast din adgangskode for at bekræfte din identitet.</p>
+        <p class="modal-text">Indtast din adgangskode for at bekræfte din identitet.</p>
         <input type="password" v-model="reauthPassword" placeholder="Adgangskode">
         <button @click="reauthenticate" class="confirm-button">Bekræft</button>
         <button @click="showReauthModal = false" class="cancel-button">Fortryd</button>
@@ -41,29 +40,48 @@
   </div>
   <div v-else>
     <p>Du skal være logget ind for at se denne side.</p>
-    <!-- Optionally, you can add a login link or button here -->
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { getAuth, deleteUser, signOut, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { useRouter } from 'vue-router';
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 export default {
   setup() {
     const auth = getAuth();
-    const user = ref(auth.currentUser);
+    const db = getFirestore();
+    const user = ref(null);
+    const points = ref(0);
     const router = useRouter();
     const showModal = ref(false);
     const showReauthModal = ref(false);
     const reauthPassword = ref('');
-    const newEmail = ref('');
 
-    // Check authentication state on component mount
-    if (!user.value) {
-      router.push('/'); // Redirect to landing page if not authenticated
-    }
+    onMounted(async () => {
+      auth.onAuthStateChanged(async (currentUser) => {
+        if (currentUser) {
+          user.value = currentUser;
+          await fetchUserPoints();
+        } else {
+          router.push('/');
+        }
+      });
+    });
+
+    const fetchUserPoints = async () => {
+      if (user.value) {
+        const userDoc = doc(db, "users", user.value.uid);
+        const userSnap = await getDoc(userDoc);
+        if (userSnap.exists()) {
+          points.value = userSnap.data().points || 0;
+        } else {
+          console.error("No such document!");
+        }
+      }
+    };
 
     const reauthenticate = () => {
       if (user.value && reauthPassword.value) {
@@ -86,7 +104,6 @@ export default {
         deleteUser(user.value)
           .then(() => {
             console.log("User Account Deleted Successfully");
-            // Log out the user
             signOut(auth)
               .then(() => {
                 router.push('/');
@@ -118,6 +135,7 @@ export default {
 
     return {
       user,
+      points,
       showModal,
       showReauthModal,
       reauthPassword,
@@ -125,13 +143,6 @@ export default {
       reauthenticate,
       formatDate,
     };
-  },
-  mounted() {
-    // Ensure the user is authenticated when component mounts
-    const auth = getAuth();
-    if (!auth.currentUser) {
-      this.$router.push('/'); // Redirect to landing page if not authenticated
-    }
   }
 };
 </script>
@@ -217,6 +228,10 @@ export default {
   text-align: center;
   max-width: 400px;
   width: 80%;
+}
+
+.modal-text{
+  margin-bottom: 15px;
 }
 
 .confirm-button {
