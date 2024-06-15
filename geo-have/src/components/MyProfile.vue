@@ -3,11 +3,12 @@
     <NavBar />
     <div class="information-container">
       <h1 class="overskrift">Min profil</h1>
-      <p class="info-title">E-mail:</p>
-      <p>{{ user.email }}</p>
-      <p class="info-title">Oprettet:</p>
-      <p>{{ formatDate(user.metadata.creationTime) }}</p>
-      <p class="info-title">Pointoversigt:</p>
+        <p class="info-title">E-mail:</p>
+          <p>{{ user.email }}</p>
+        <p class="info-title">Oprettet:</p>
+          <p>{{ formatDate(user.metadata.creationTime) }}</p>
+        <p class="info-title">Pointoversigt:</p>
+        
     </div>
     <div class="container">
       <button @click="showEditEmailModal = true" class="edit-button">

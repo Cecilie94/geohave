@@ -206,6 +206,8 @@ function makeTransaction(pointShopItemId, cost, max) {
     addDoc(collection(db, "UserPointShopTransaction"), {
       PointShopItemId: pointShopItemId,
       UserId: UserId.value,
+      Price: cost,
+      TransactionDate: Date.now(),
     });
 
     // Assuming you have a router set up and imported correctly.
