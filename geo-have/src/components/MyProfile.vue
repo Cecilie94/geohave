@@ -1,6 +1,5 @@
 <template>
   <div v-if="user">
-    <NavBar />
     <div class="information-container">
       <h1 class="overskrift">Min profil</h1>
       <p class="info-title">E-mail:</p>
