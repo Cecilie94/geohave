@@ -3,12 +3,12 @@
     <NavBar />
     <div class="information-container">
       <h1 class="overskrift">Min profil</h1>
-        <p class="info-title">E-mail:</p>
-          <p>{{ user.email }}</p>
-        <p class="info-title">Oprettet:</p>
-          <p>{{ formatDate(user.metadata.creationTime) }}</p>
-        <p class="info-title">Pointoversigt:</p>
-        
+      <p class="info-title">E-mail:</p>
+      <p>{{ user.email }}</p>
+      <p class="info-title">Oprettet:</p>
+      <p>{{ formatDate(user.metadata.creationTime) }}</p>
+      <p class="info-title">Pointoversigt:</p>
+      <a @click="showPointsModal = true">Klik her</a>
     </div>
     <div class="container">
       <button @click="showEditEmailModal = true" class="edit-button">
@@ -37,115 +37,130 @@
         <button @click="showReauthModal = false" class="cancel-button">Fortryd</button>
       </div>
     </div>
+
+    <div v-if="showPointsModal" class="modal">
+      <div class="modal-content">
+        <h2>Point oversigt</h2>
+        <ul class="points-list">
+          <li v-for="transaction in pointTransactions" :key="transaction.date">
+            <span>{{ formatDate(transaction.date) }}</span>
+            <span :class="{'points-earned': transaction.points > 0, 'points-spent': transaction.points < 0}">
+              {{ transaction.points > 0 ? '+' : '' }}{{ transaction.points }}
+            </span>
+          </li>
+        </ul>
+        <button @click="showPointsModal = false" class="cancel-button">Luk</button>
+      </div>
+    </div>
   </div>
   <div v-else>
     <p>Du skal være logget ind for at se denne side.</p>
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { getAuth, deleteUser, signOut, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { useRouter } from 'vue-router';
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import { getFirestore, collection, getDocs, doc, onSnapshot } from "firebase/firestore";
 
-export default {
-  setup() {
-    const auth = getAuth();
-    const db = getFirestore();
-    const user = ref(null);
-    const router = useRouter();
-    const showModal = ref(false);
-    const showReauthModal = ref(false);
-    const reauthPassword = ref('');
-    let unsubscribe = null;
+const auth = getAuth();
+const db = getFirestore();
+const router = useRouter();
+const user = ref(null);
+const showModal = ref(false);
+const showReauthModal = ref(false);
+const showPointsModal = ref(false);
+const reauthPassword = ref('');
+const pointTransactions = ref([]);
+let unsubscribe = null;
 
-    onMounted(() => {
-      auth.onAuthStateChanged(currentUser => {
-        if (currentUser) {
-          user.value = currentUser;
-          if (unsubscribe) unsubscribe();
-          unsubscribe = watchUserPoints();
-        } else {
-          router.push('/');
-        }
-      });
-    });
-
-    const watchUserPoints = () => {
-      if (user.value) {
-        const userDoc = doc(db, "users", user.value.uid);
-        return onSnapshot(userDoc, doc => {
-          if (doc.exists()) {
-            user.value.points = doc.data().points || 0;
-          } else {
-            console.error("No such document!");
-          }
-        });
-      }
-    };
-
-    const reauthenticate = () => {
-      if (user.value && reauthPassword.value) {
-        const credential = EmailAuthProvider.credential(user.value.email, reauthPassword.value);
-        reauthenticateWithCredential(user.value, credential)
-          .then(() => {
-            showReauthModal.value = false;
-            confirmDelete();
-          })
-          .catch(error => {
-            console.error("Error reauthenticating user:", error);
-          });
-      } else {
-        console.error("Reauthentication failed: no user or password");
-      }
-    };
-
-    const confirmDelete = () => {
-      if (user.value) {
-        deleteUser(user.value)
-          .then(() => {
-            console.log("User Account Deleted Successfully");
-            signOut(auth)
-              .then(() => router.push('/'))
-              .catch(signOutError => console.error("Error signing out:", signOutError));
-          })
-          .catch(error => {
-            if (error.code === 'auth/requires-recent-login') {
-              showReauthModal.value = true;
-            } else {
-              console.error("Error deleting user:", error);
-            }
-          });
-        showModal.value = false;
-      } else {
-        console.error("No user is currently signed in");
-      }
-    };
-
-    const formatDate = timestamp => {
-      const date = new Date(timestamp);
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = String(date.getFullYear()).slice(-2);
-      return `${day}-${month}-${year}`;
-    };
-
-    onUnmounted(() => {
+onMounted(() => {
+  auth.onAuthStateChanged(currentUser => {
+    if (currentUser) {
+      user.value = currentUser;
       if (unsubscribe) unsubscribe();
-    });
+      unsubscribe = watchUserPoints();
+      fetchPointTransactions(currentUser.uid);
+    } else {
+      router.push('/');
+    }
+  });
+});
 
-    return {
-      user,
-      showModal,
-      showReauthModal,
-      reauthPassword,
-      confirmDelete,
-      reauthenticate,
-      formatDate,
-    };
+const watchUserPoints = () => {
+  if (user.value) {
+    const userDoc = doc(db, "users", user.value.uid);
+    return onSnapshot(userDoc, doc => {
+      if (doc.exists()) {
+        user.value.points = doc.data().points || 0;
+      } else {
+        console.error("No such document!");
+      }
+    });
   }
 };
+
+const fetchPointTransactions = async (userId) => {
+  const querySnapshot = await getDocs(collection(db, 'UserPointShopTransaction'));
+  pointTransactions.value = querySnapshot.docs
+    .filter(doc => doc.data().UserId === userId)
+    .map(doc => ({
+      date: new Date(doc.data().TransactionDate),
+      points: doc.data().Price
+    }));
+};
+
+const reauthenticate = () => {
+  if (user.value && reauthPassword.value) {
+    const credential = EmailAuthProvider.credential(user.value.email, reauthPassword.value);
+    reauthenticateWithCredential(user.value, credential)
+      .then(() => {
+        showReauthModal.value = false;
+        confirmDelete();
+      })
+      .catch(error => {
+        console.error("Error reauthenticating user:", error);
+      });
+  } else {
+    console.error("Reauthentication failed: no user or password");
+  }
+};
+
+const confirmDelete = () => {
+  if (user.value) {
+    deleteUser(user.value)
+      .then(() => {
+        console.log("User Account Deleted Successfully");
+        signOut(auth)
+          .then(() => router.push('/'))
+          .catch(signOutError => console.error("Error signing out:", signOutError));
+      })
+      .catch(error => {
+        if (error.code === 'auth/requires-recent-login') {
+          showReauthModal.value = true;
+        } else {
+          console.error("Error deleting user:", error);
+        }
+      });
+    showModal.value = false;
+  } else {
+    console.error("No user is currently signed in");
+  }
+};
+
+const formatDate = timestamp => {
+  const date = new Date(timestamp);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}-${month}-${year}`;
+};
+
+onUnmounted(() => {
+  if (unsubscribe) unsubscribe();
+});
+
 </script>
 
 <style scoped>
