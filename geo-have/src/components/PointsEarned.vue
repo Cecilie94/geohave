@@ -18,7 +18,7 @@ const goToNextTask = async () => {
 
     const userRef = doc(db, "User", UserInfoRefId.value);
     await updateDoc(userRef, {
-      points: UserPointsOnline.value + points.value,
+      points: (UserPointsOnline.value || 0) + points.value, //fix NaN issue if anon user has no points - logged in users get 0 points by default, anon does not
     });
 
     console.log("Update successful, redirecting...");
@@ -52,6 +52,7 @@ onMounted(() => {
     if (user) {
       // User is signed in
       UserId.value = user.uid;
+      console.log("UserId:", UserId.value);
     } else {
       // No user is signed in
       UserId.value = null;

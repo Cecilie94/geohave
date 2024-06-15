@@ -22,7 +22,7 @@
   <div class="pointshop-section2">
     <h2>Indløs</h2>
     <div class="container">
-      <PointShopIthem
+      <PointShopItem
         v-for="item in PointShopItemsOnline"
         :key="item.id"
         :icon="item.icon"
@@ -49,10 +49,20 @@
       <button class="popup-button-style" @click="closePopup()">OK</button>
     </div>
   </div>
+
+  <Modal @close="toggleModal" :modalActive="modalActive">
+    <div class="modal-content">
+      <h3 class="title">Mist ikke dine point! Opret en bruger</h3>
+      <button @click="migrateAnonAccountToGoogle">Opret med Google</button>
+      <button @click="signInWithFacebook">Opret med Facebook</button>
+      <button @click="someformular">Opret med email</button>
+    </div>
+  </Modal>
 </template>
 
 <script setup>
-import PointShopIthem from "../components/PointShopIthem.vue";
+import PointShopItem from "./PointShopItem.vue";
+import Modal from "./Modal.vue";
 import { ref, onMounted } from "vue";
 import { db } from "@/configs/firebase";
 import {
@@ -64,6 +74,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { migrateAnonAccountToGoogle } from "@/services/migrateAnonAccount";
 
 const PointShopItemsOnline = ref([
   {
@@ -99,13 +110,20 @@ const PointShopTransactionsOnline = ref([]);
 const UserPointsOnline = ref(0);
 const UserId = ref("");
 const UserInfoRefId = ref("");
+const modalActive = ref(false);
 
+const toggleModal = () => {
+  modalActive.value = !modalActive.value;
+};
 onMounted(async () => {
   const auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
       // User is signed in
       UserId.value = user.uid;
+      if (user.isAnonymous) {
+        modalActive.value = true;
+      }
     } else {
       // No user is signed in
       UserId.value = null;
@@ -117,14 +135,14 @@ onMounted(async () => {
   );
   PointShopItemsOnline.value = [];
   querySnapshotPointShopItem.forEach((doc) => {
-    console.log(doc.id, "=>", doc.data());
+    //console.log(doc.id, "=>", doc.data());
     const item = doc.data();
     item.id = doc.id;
     PointShopItemsOnline.value.push(item);
   });
   const querySnapshotUserPoints = await getDocs(collection(db, "User"));
   querySnapshotUserPoints.forEach((doc) => {
-    console.log(doc.id, "=>", doc.data());
+    //console.log(doc.id, "=>", doc.data());
     if (doc.data().uid === UserId.value) {
       UserInfoRefId.value = doc.id;
       UserPointsOnline.value = doc.data().points;
@@ -134,49 +152,11 @@ onMounted(async () => {
     collection(db, "UserPointShopTransaction")
   );
   querySnapshotPointShopTransactions.forEach((doc) => {
-    console.log(doc.id, "=>", doc.data());
+    //console.log(doc.id, "=>", doc.data());
     if (doc.data().UserId === UserId.value) {
       PointShopTransactionsOnline.value.push(doc.data());
     }
   });
-  // //old
-  // const auth = getAuth();
-  // onAuthStateChanged(auth, async (user) => {
-  //   if (user) {
-  //     UserId.value = user.uid;
-
-  //     const querySnapshotPointShopItem = await getDocs(
-  //       collection(db, "PointShopItem")
-  //     );
-  //     PointShopItemsOnline.value = [];
-  //     querySnapshotPointShopItem.forEach((doc) => {
-  //       console.log(doc.id, "=>", doc.data());
-  //       const item = doc.data();
-  //       item.id = doc.id;
-  //       PointShopItemsOnline.value.push(item);
-  //     });
-
-  //     // Fetch single user document
-  //     const userDocRef = doc(db, "User", UserId.value);
-  //     const userDoc = await getDoc(userDocRef); // Use getDoc for a single document
-  //     if (userDoc.exists()) {
-  //       UserPointsOnline.value = userDoc.data().Points;
-  //     }
-
-  //     const querySnapshotPointShopTransactions = await getDocs(
-  //       collection(db, "UserPointShopTransaction")
-  //     );
-  //     querySnapshotPointShopTransactions.forEach((doc) => {
-  //       console.log(doc.id, "=>", doc.data());
-  //       if (doc.data().UserId === UserId.value) {
-  //         PointShopTransactionsOnline.value.push(doc.data());
-  //       }
-  //     });
-  //   } else {
-  //     // No user is signed in.
-  //     // You can redirect the user to the login page or show a message.
-  //   }
-  // });
 });
 
 const displayPopup = ref(false);

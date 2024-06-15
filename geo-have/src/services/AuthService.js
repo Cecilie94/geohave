@@ -80,17 +80,17 @@ export const signUp = async (email, password) => {
 // Function to add user data to Firestore
 const addUserToFirestore = async (uid, email) => {
   try {
-    var createNewUserInfo = true;
+    let createNewUserInfo = true;
 
     const querySnapshotUserPoints = await getDocs(collection(db, "User"));
     querySnapshotUserPoints.forEach((doc) => {
       console.log(doc.id, "=>", doc.data());
       if (doc.data().uid === uid) {
-        createNewUserInfo = false
+        createNewUserInfo = false;
       }
     });
 
-    if(createNewUserInfo){
+    if (createNewUserInfo) {
       const userRef = collection(db, "User");
       await addDoc(userRef, {
         uid: uid,
@@ -98,7 +98,7 @@ const addUserToFirestore = async (uid, email) => {
         firstname: "",
         lastname: "",
         phone: "",
-        points: 0
+        points: 0,
       });
       console.log("User data added to Firestore");
     }
