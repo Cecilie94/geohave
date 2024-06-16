@@ -6,7 +6,7 @@
       <p>{{ user.email }}</p>
       <p class="info-title">Oprettet:</p>
       <p>{{ formatDate(user.metadata.creationTime) }}</p>
-      <p class="info-title">Pointoversigt:</p>
+      <p class="info-title">Købs oversigt:</p>
       <a @click="showPointsModal = true">Klik her</a>
     </div>
     <div class="container">
@@ -39,11 +39,12 @@
 
     <div v-if="showPointsModal" class="modal">
       <div class="modal-content">
-        <h2>Point oversigt</h2>
+        <h2>Købs oversigt</h2>
         <ul class="points-list">
           <li v-for="transaction in pointTransactions" :key="transaction.date">
             <span>{{ formatDate(transaction.date) }}</span>
-            <span :class="{'points-spent': transaction.points > 0, 'points-earned': transaction.points < 0}">
+            <span>{{ transaction.item }}</span>
+            <span :class="{'points-spent': transaction.points > 0}">
               {{ transaction.points > 0 ? '-' : '' }}{{ transaction.points }}
             </span>
           </li>
@@ -94,6 +95,7 @@ const fetchPointTransactions = async (userId) => {
     .filter(doc => doc.data().UserId === userId)
     .map(doc => ({
       date: new Date(doc.data().TransactionDate),
+      item: doc.data().Name, // Assuming pointShopItemId is the field name in your Firestore
       points: doc.data().Price
     }));
 };
@@ -179,10 +181,6 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-}
-
-.points-earned {
-  color: green;
 }
 
 .points-spent {

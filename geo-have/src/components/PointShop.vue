@@ -34,7 +34,7 @@
           ).length
         "
         :max="item.max"
-        @click="makeTransaction(item.id, item.cost, item.max)"
+        @click="makeTransaction(item.id, item.text, item.cost, item.max)"
       />
     </div>
   </div>
@@ -181,7 +181,7 @@ onMounted(async () => {
 
 const displayPopup = ref(false);
 
-function makeTransaction(pointShopItemId, cost, max) {
+function makeTransaction(pointShopItemId, itemName, cost, max) {
   if (pointShopItemId === null) {
     return;
   }
@@ -206,6 +206,7 @@ function makeTransaction(pointShopItemId, cost, max) {
     addDoc(collection(db, "UserPointShopTransaction"), {
       PointShopItemId: pointShopItemId,
       UserId: UserId.value,
+      Name: itemName,
       Price: cost,
       TransactionDate: Date.now(),
     });
