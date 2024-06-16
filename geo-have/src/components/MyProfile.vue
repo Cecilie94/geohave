@@ -82,8 +82,6 @@ const watchUserPoints = () => {
     return onSnapshot(userDoc, doc => {
       if (doc.exists()) {
         user.value.points = doc.data().points || 0;
-      } else {
-        console.error("No such document for user:", user.value.uid);
       }
     });
   }
@@ -95,7 +93,7 @@ const fetchPointTransactions = async (userId) => {
     .filter(doc => doc.data().UserId === userId)
     .map(doc => ({
       date: new Date(doc.data().TransactionDate),
-      item: doc.data().Name, // Assuming pointShopItemId is the field name in your Firestore
+      item: doc.data().Name,
       points: doc.data().Price
     }));
 };
@@ -111,8 +109,6 @@ const reauthenticate = () => {
       .catch(error => {
         console.error("Error reauthenticating user:", error);
       });
-  } else {
-    console.error("Reauthentication failed: no user or password");
   }
 };
 
@@ -120,7 +116,6 @@ const confirmDelete = () => {
   if (user.value) {
     deleteUser(user.value)
       .then(() => {
-        console.log("User Account Deleted Successfully");
         signOut(auth)
           .then(() => router.push('/'))
           .catch(signOutError => console.error("Error signing out:", signOutError));
@@ -133,8 +128,6 @@ const confirmDelete = () => {
         }
       });
     showModal.value = false;
-  } else {
-    console.error("No user is currently signed in");
   }
 };
 
