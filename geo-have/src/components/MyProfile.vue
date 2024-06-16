@@ -29,9 +29,9 @@
 
     <div v-if="showReauthModal" class="modal">
       <div class="modal-content">
-        <h2>Reauthenticering påkrævet</h2>
+        <h2>Adgangskode påkrævet</h2>
         <p class="modal-text">Indtast din adgangskode for at bekræfte din identitet.</p>
-        <input type="password" v-model="reauthPassword" placeholder="Adgangskode">
+        <input type="password" v-model="reauthPassword" placeholder="Adgangskode" class="input-felt">
         <button @click="reauthenticate" class="confirm-button">Bekræft</button>
         <button @click="showReauthModal = false" class="cancel-button">Fortryd</button>
       </div>
@@ -165,6 +165,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.input-felt{
+  width: 100%;
+}
+
 .points-list {
   list-style-type: none;
   padding: 0;
