@@ -52,10 +52,16 @@
 
   <Modal @close="toggleModal" :modalActive="modalActive">
     <div class="modal-content">
-      <h3 class="title">Mist ikke dine point! Opret en bruger</h3>
-      <button @click="migrateAnonAccountToGoogle">Opret med Google</button>
-      <button @click="signInWithFacebook">Opret med Facebook</button>
-      <button @click="someformular">Opret med email</button>
+      <h3 class="title">Gå ikke glip af dine point!</h3>
+      <p class="modaltext">
+        Opret en konto for at gemme dine point og få adgang til eksklusive
+        tilbud
+      </p>
+      <div class="somebttn">
+        <button @click="migrateAnonAccountToGoogle">Opret med Google</button>
+        <button @click="signInWithFacebook">Opret med Facebook</button>
+        <button @click="someformular">Opret med email</button>
+      </div>
     </div>
   </Modal>
 </template>
@@ -338,5 +344,42 @@ function closePopup() {
   border-radius: 5px;
   font-size: 17px;
   margin-top: 20px;
+}
+
+button {
+  width: 80px;
+  height: 44px;
+  background-color: var(--primary-yellow);
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  font-family: "Kameron", serif;
+  font-size: 12px;
+  margin: auto;
+  display: block;
+}
+
+button:hover {
+  background-color: var(--btn-on-click-yellow);
+}
+
+.somebttn {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding-top: 5%;
+}
+
+.title {
+  text-align: center;
+  font-family: Kameron, serif;
+}
+
+.modaltext {
+  text-align: center;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 300;
+  font-size: 15px;
 }
 </style>

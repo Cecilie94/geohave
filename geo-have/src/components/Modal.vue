@@ -25,9 +25,9 @@ const okClicked = () => {
         <div v-show="modalActive" class="modal-inner" @click.stop>
           <!-- import modal component and insert content -->
           <slot />
-          <button @click="okClicked" type="button" v-if="!!okClicked">
+          <!-- <button @click="okClicked" type="button" v-if="!!okClicked">
             OK
-          </button>
+          </button> -->
         </div>
       </transition>
     </div>
