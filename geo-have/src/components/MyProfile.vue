@@ -43,8 +43,8 @@
         <ul class="points-list">
           <li v-for="transaction in pointTransactions" :key="transaction.date">
             <span>{{ formatDate(transaction.date) }}</span>
-            <span :class="{'points-earned': transaction.points > 0, 'points-spent': transaction.points < 0}">
-              {{ transaction.points > 0 ? '+' : '' }}{{ transaction.points }}
+            <span :class="{'points-spent': transaction.points > 0, 'points-earned': transaction.points < 0}">
+              {{ transaction.points > 0 ? '-' : '' }}{{ transaction.points }}
             </span>
           </li>
         </ul>
@@ -59,7 +59,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { getAuth, deleteUser, signOut, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import { getAuth, deleteUser, signOut, reauthenticateWithCredential, EmailAuthProvider, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from 'vue-router';
 import { getFirestore, collection, getDocs, doc, onSnapshot } from "firebase/firestore";
 
@@ -73,19 +73,7 @@ const showPointsModal = ref(false);
 const reauthPassword = ref('');
 const pointTransactions = ref([]);
 let unsubscribe = null;
-
-onMounted(() => {
-  auth.onAuthStateChanged(currentUser => {
-    if (currentUser) {
-      user.value = currentUser;
-      if (unsubscribe) unsubscribe();
-      unsubscribe = watchUserPoints();
-      fetchPointTransactions(currentUser.uid);
-    } else {
-      router.push('/');
-    }
-  });
-});
+const UserId = ref("");
 
 const watchUserPoints = () => {
   if (user.value) {
@@ -94,7 +82,7 @@ const watchUserPoints = () => {
       if (doc.exists()) {
         user.value.points = doc.data().points || 0;
       } else {
-        console.error("No such document!");
+        console.error("No such document for user:", user.value.uid);
       }
     });
   }
@@ -156,13 +144,51 @@ const formatDate = timestamp => {
   return `${day}-${month}-${year}`;
 };
 
+onMounted(() => {
+  onAuthStateChanged(auth, currentUser => {
+    if (currentUser) {
+      user.value = currentUser;
+      UserId.value = currentUser.uid;
+
+      if (unsubscribe) unsubscribe();
+      unsubscribe = watchUserPoints();
+      fetchPointTransactions(currentUser.uid);
+    } else {
+      router.push('/');
+    }
+  });
+});
+
 onUnmounted(() => {
   if (unsubscribe) unsubscribe();
 });
-
 </script>
 
 <style scoped>
+.points-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.points-list li {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.points-earned {
+  color: green;
+}
+
+.points-spent {
+  color: red;
+}
+
+h2{
+  margin-bottom: 20px;
+}
+
 .info-title {
   color: #000;
   font-size: 16px;
@@ -267,5 +293,6 @@ onUnmounted(() => {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+  margin-top: 20px;
 }
 </style>
