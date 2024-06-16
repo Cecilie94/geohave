@@ -6,7 +6,7 @@
       <p>{{ user.email }}</p>
       <p class="info-title">Oprettet:</p>
       <p>{{ formatDate(user.metadata.creationTime) }}</p>
-      <p class="info-title">Købs oversigt:</p>
+      <p class="info-title">Købshistorik:</p>
       <a @click="showPointsModal = true">Klik her</a>
     </div>
     <div class="container">
@@ -39,7 +39,7 @@
 
     <div v-if="showPointsModal" class="modal">
       <div class="modal-content">
-        <h2>Købs oversigt</h2>
+        <h2>Købshistorik</h2>
         <ul class="points-list">
           <li v-for="transaction in pointTransactions" :key="transaction.date">
             <span>{{ formatDate(transaction.date) }}</span>
