@@ -111,7 +111,6 @@ onMounted(async () => {
       UserId.value = null;
     }
   });
-});
 
   // Fetch documents from the "PointShopItem" collection in the database
 const querySnapshotPointShopItem = await getDocs(collection(db, "PointShopItem"));
