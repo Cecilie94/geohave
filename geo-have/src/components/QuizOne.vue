@@ -109,6 +109,9 @@ const getCurrentQuestion = computed(() => {
 
 // Function to set the selected answer for the current question
 const setAnswer = (e) => {
+  // Hent værdien af det input-element, der udløste begivenheden (e.target.value)
+  // Konverter værdien fra en streng til et heltal ved hjælp af parseInt
+  // Tildel denne værdi til 'selected' egenskaben af det aktuelle spørgsmål
   currentQuestions.value[currentQuestion.value].selected = parseInt(
     e.target.value
   );
