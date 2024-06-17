@@ -112,88 +112,73 @@ onMounted(async () => {
     }
   });
 
-  // Fetch documents from the "PointShopItem" collection in the database
-const querySnapshotPointShopItem = await getDocs(collection(db, "PointShopItem"));
-PointShopItemsOnline.value = []; // Clear the PointShopItemsOnline array
-
-// Iterate over each document in the "PointShopItem" collection snapshot
-querySnapshotPointShopItem.forEach((doc) => {
-  console.log(doc.id, "=>", doc.data()); // Log the document ID and data
-  const item = doc.data(); // Get the document data
-  item.id = doc.id; // Assign the document ID to the item
-  PointShopItemsOnline.value.push(item); // Add the item to the PointShopItemsOnline array
+  const querySnapshotPointShopItem = await getDocs(
+    collection(db, "PointShopItem")
+  );
+  PointShopItemsOnline.value = [];
+  querySnapshotPointShopItem.forEach((doc) => {
+    console.log(doc.id, "=>", doc.data());
+    const item = doc.data();
+    item.id = doc.id;
+    PointShopItemsOnline.value.push(item);
+  });
+  const querySnapshotUserPoints = await getDocs(collection(db, "User"));
+  querySnapshotUserPoints.forEach((doc) => {
+    console.log(doc.id, "=>", doc.data());
+    if (doc.data().uid === UserId.value) {
+      UserInfoRefId.value = doc.id;
+      UserPointsOnline.value = doc.data().points;
+    }
+  });
+  const querySnapshotPointShopTransactions = await getDocs(
+    collection(db, "UserPointShopTransaction")
+  );
+  querySnapshotPointShopTransactions.forEach((doc) => {
+    console.log(doc.id, "=>", doc.data());
+    if (doc.data().UserId === UserId.value) {
+      PointShopTransactionsOnline.value.push(doc.data());
+    }
+  });
 });
 
-// Fetch documents from the "User" collection in the database
-const querySnapshotUserPoints = await getDocs(collection(db, "User"));
-
-// Iterate over each document in the "User" collection snapshot
-querySnapshotUserPoints.forEach((doc) => {
-  console.log(doc.id, "=>", doc.data()); // Log the document ID and data
-  if (doc.data().uid === UserId.value) { // Check if the document's user ID matches the current user ID
-    UserInfoRefId.value = doc.id; // Set the user info reference ID
-    UserPointsOnline.value = doc.data().points; // Set the user's points
-  }
-});
-
-// Fetch documents from the "UserPointShopTransaction" collection in the database
-const querySnapshotPointShopTransactions = await getDocs(collection(db, "UserPointShopTransaction"));
-
-// Iterate over each document in the "UserPointShopTransaction" collection snapshot
-querySnapshotPointShopTransactions.forEach((doc) => {
-  console.log(doc.id, "=>", doc.data()); // Log the document ID and data
-  if (doc.data().UserId === UserId.value) { // Check if the document's user ID matches the current user ID
-    PointShopTransactionsOnline.value.push(doc.data()); // Add the transaction to the PointShopTransactionsOnline array
-  }
-});
-
-// Reference for controlling the display state of a popup
 const displayPopup = ref(false);
 
-// Function to make a transaction
 function makeTransaction(pointShopItemId, cost, max) {
   if (pointShopItemId === null) {
-    return; // Exit if the pointShopItemId is null
+    return;
   }
 
-  // Check if the user has enough points and hasn't exceeded the maximum allowed transactions for the item
   if (
     UserPointsOnline.value > cost &&
     PointShopTransactionsOnline.value.filter(
       (x) => x.pointShopItemId === pointShopItemId
     ).length < max
   ) {
-    UserPointsOnline.value = UserPointsOnline.value - cost; // Deduct the cost from the user's points
+    UserPointsOnline.value = UserPointsOnline.value - cost;
 
-    // Update the user's points in the database
     const userRef = doc(db, "User", UserInfoRefId.value);
     updateDoc(userRef, {
       points: UserPointsOnline.value,
     });
 
-    // Add the new transaction to the PointShopTransactionsOnline array
     PointShopTransactionsOnline.value.push({
       userId: UserId.value,
       pointShopItemId: pointShopItemId,
     });
-
-    // Add the new transaction to the "UserPointShopTransaction" collection in the database
     addDoc(collection(db, "UserPointShopTransaction"), {
       PointShopItemId: pointShopItemId,
       UserId: UserId.value,
     });
 
-    // Navigate to the "Collect" route with the rewardId query parameter
     // Assuming you have a router set up and imported correctly.
     // router.push({ name: "Collect", query: { rewardId: pointShopItemId } });
   } else {
-    displayPopup.value = true; // Show the popup if the transaction conditions are not met
+    displayPopup.value = true;
   }
 }
 
-// Function to close the popup
 function closePopup() {
-  displayPopup.value = false; // Hide the popup
+  displayPopup.value = false;
 }
 </script>
 
