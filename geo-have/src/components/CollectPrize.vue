@@ -1,3 +1,4 @@
+<!-- Indløse en kupon -->
 <template>
   <div>
     <div v-for="prize in redemptionOptions" :key="prize.id">

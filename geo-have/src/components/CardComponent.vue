@@ -1,3 +1,4 @@
+<!-- Skattejagt banner - dynamisk kan ændre titel -->
 <template>
   <div class="card">
     <div

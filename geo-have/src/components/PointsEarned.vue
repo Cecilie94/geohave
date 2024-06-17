@@ -8,8 +8,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const UserId = ref("");
 const UserInfoRefId = ref("");
-const UserPointsOnline = ref(0);
-
+const UserPointsOnline = ref(0); // Holder styr på aktuelle brugers point (starter altid på 0)
 const goToNextTask = async () => {
   try {
     console.log("Navigating to next task...");
@@ -73,8 +72,8 @@ onMounted(() => {
 const maxPointsReached = ref(false);
 
 // Watching for points reaching the maximum
-const checkMaxPoints = () => {
-  if (points.value === targetPoints && !maxPointsReached.value) {
+const checkMaxPoints = () => {  
+  if (points.value === targetPoints && !maxPointsReached.value) { // ! = ikke nå max points
     maxPointsReached.value = true;
     const circle = document.querySelector(".circle");
     circle.classList.add("pop-out");

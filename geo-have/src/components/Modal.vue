@@ -1,3 +1,5 @@
+<!-- Logik for modal -->
+
 <script setup>
 const emit = defineEmits(["close", "okClicked", "handleOuterClick"]);
 const props = defineProps(["modalActive"]);
@@ -5,6 +7,7 @@ const close = () => {
   emit("close");
 };
 
+// klikker ved siden af = luk modal (ude af drift)
 const handleOuterClick = (event) => {
   if (event.target.classList.contains("modal")) {
     emit("handleOuterClick");

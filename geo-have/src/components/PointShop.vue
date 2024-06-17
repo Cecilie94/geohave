@@ -139,44 +139,6 @@ onMounted(async () => {
       PointShopTransactionsOnline.value.push(doc.data());
     }
   });
-  // //old
-  // const auth = getAuth();
-  // onAuthStateChanged(auth, async (user) => {
-  //   if (user) {
-  //     UserId.value = user.uid;
-
-  //     const querySnapshotPointShopItem = await getDocs(
-  //       collection(db, "PointShopItem")
-  //     );
-  //     PointShopItemsOnline.value = [];
-  //     querySnapshotPointShopItem.forEach((doc) => {
-  //       console.log(doc.id, "=>", doc.data());
-  //       const item = doc.data();
-  //       item.id = doc.id;
-  //       PointShopItemsOnline.value.push(item);
-  //     });
-
-  //     // Fetch single user document
-  //     const userDocRef = doc(db, "User", UserId.value);
-  //     const userDoc = await getDoc(userDocRef); // Use getDoc for a single document
-  //     if (userDoc.exists()) {
-  //       UserPointsOnline.value = userDoc.data().Points;
-  //     }
-
-  //     const querySnapshotPointShopTransactions = await getDocs(
-  //       collection(db, "UserPointShopTransaction")
-  //     );
-  //     querySnapshotPointShopTransactions.forEach((doc) => {
-  //       console.log(doc.id, "=>", doc.data());
-  //       if (doc.data().UserId === UserId.value) {
-  //         PointShopTransactionsOnline.value.push(doc.data());
-  //       }
-  //     });
-  //   } else {
-  //     // No user is signed in.
-  //     // You can redirect the user to the login page or show a message.
-  //   }
-  // });
 });
 
 const displayPopup = ref(false);
