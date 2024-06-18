@@ -1,37 +1,20 @@
 <script setup>
-import router from "@/router";
-import { ref, onMounted, watch } from "vue";
-import ConfettiExplosion from "vue-confetti-explosion";
-import { db } from "@/configs/firebase";
-import { collection, updateDoc, doc, getDocs } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ref, onMounted, watch } from 'vue';
+import router from '@/router';
+import { usePointsStore } from '@/stores/pointsStore';
+import { db } from '@/configs/firebase';
+import { collection, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import ConfettiExplosion from 'vue-confetti-explosion';
 
+const pointsStore = usePointsStore();
+const points = ref(0);
 const UserId = ref("");
 const UserInfoRefId = ref("");
 const UserPointsOnline = ref(0);
+const maxPointsReached = ref(false);
 
-const goToNextTask = async () => {
-  try {
-    console.log("Navigating to next task...");
-    console.log("UserInfoRefId:", UserInfoRefId.value);
-    console.log("UserPointsOnline:", UserPointsOnline.value);
-
-    const userRef = doc(db, "User", UserInfoRefId.value);
-    await updateDoc(userRef, {
-      points: UserPointsOnline.value + points.value,
-    });
-
-    console.log("Update successful, redirecting...");
-    router.push("/skattejagt/kort");
-  } catch (error) {
-    console.error("Error updating document:", error);
-  }
-};
-
-const points = ref(0);
-
-// Simulating points increment over time
-const targetPoints = 20;
+const targetPoints = 20; // Example target points
 const animationDuration = 1000; // milliseconds
 const pointsPerSecond = targetPoints / (animationDuration / 1000);
 let currentPoints = 0;
@@ -47,39 +30,57 @@ const updatePoints = async () => {
 onMounted(() => {
   // Start the animation
   updatePoints();
+
   const auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
       // User is signed in
       UserId.value = user.uid;
+      fetchUserPoints(user.uid);
     } else {
       // No user is signed in
       UserId.value = null;
     }
   });
+});
 
-  (async () => {
-    const querySnapshotUserPoints = await getDocs(collection(db, "User"));
+const fetchUserPoints = async (userId) => {
+  try {
+    const querySnapshotUserPoints = await getDocs(collection(db, 'User'));
     querySnapshotUserPoints.forEach((doc) => {
-      console.log(doc.id, "=>", doc.data());
-      if (doc.data().uid === UserId.value) {
+      if (doc.data().uid === userId) {
         UserInfoRefId.value = doc.id;
         UserPointsOnline.value = doc.data().points;
       }
     });
-  })(); // Immediately invoke the async function
-});
+  } catch (error) {
+    console.error('Error fetching user points:', error);
+  }
+};
 
-const maxPointsReached = ref(false);
+const goToNextTask = async () => {
+  try {
+    await pointsStore.addPoints(points.value); // Add points to the store
+
+    const userRef = doc(db, 'User', UserInfoRefId.value);
+    await updateDoc(userRef, {
+      points: UserPointsOnline.value + points.value,
+    });
+
+    router.push('/skattejagt/kort');
+  } catch (error) {
+    console.error('Error processing points:', error);
+  }
+};
 
 // Watching for points reaching the maximum
 const checkMaxPoints = () => {
   if (points.value === targetPoints && !maxPointsReached.value) {
     maxPointsReached.value = true;
-    const circle = document.querySelector(".circle");
-    circle.classList.add("pop-out");
+    const circle = document.querySelector('.circle');
+    circle.classList.add('pop-out');
     setTimeout(() => {
-      circle.classList.remove("pop-out");
+      circle.classList.remove('pop-out');
     }, 500);
   }
 };
@@ -99,7 +100,7 @@ watch(points, () => {
       </div>
       <div class="points-counter">
         <div class="confetti-container">
-          <confettiExplosion
+          <confetti-explosion
             :particleCount="300"
             :force="0.5"
             :particleSize="10"

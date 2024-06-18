@@ -1,8 +1,58 @@
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useQuizStore } from '../stores/quizStore';
+
+const router = useRouter();
+const quizStore = useQuizStore();
+const loading = ref(true);
+
+onMounted(async () => {
+  await quizStore.fetchQuestions();
+  loading.value = false;
+});
+
+const quizCompleted = ref(false);
+const currentQuestion = ref(0);
+
+const score = computed(() => {
+  let value = 0;
+  quizStore.questions.forEach((q) => {
+    if (q.selected === q.answer) {
+      value += q.points;
+    }
+  });
+  return value;
+});
+
+const getCurrentQuestion = computed(() => {
+  if (quizStore.questions.length > 0) {
+    let question = quizStore.questions[currentQuestion.value];
+    question.index = currentQuestion.value;
+    return question;
+  }
+  return { question: '', options: [], selected: null, index: 0, answer: null };
+});
+
+const setAnswer = (index) => {
+  getCurrentQuestion.value.selected = index;
+};
+
+const finishQuiz = () => {
+  const isCorrect = getCurrentQuestion.value.selected === getCurrentQuestion.value.answer;
+  if (isCorrect) {
+    router.push("/quiz/points");
+  } else {
+    router.push("/");
+  }
+};
+</script>
+
 <template>
   <main class="app">
     <h1>Quiz!</h1>
-    <span class="score"> {{ score }}/{{ currentQuestions.length }} </span>
-    <section class="quiz" v-if="!quizCompleted">
+    <span v-if="!loading" class="score"> {{ score }}/{{ quizStore.questions.length }} </span>
+    <section class="quiz" v-if="!quizCompleted && !loading">
       <div class="quiz-info">
         <span class="question">
           {{ getCurrentQuestion.question }}
@@ -11,120 +61,63 @@
 
       <div class="options">
         <label
-            v-for="(option, index) in getCurrentQuestion.options"
-            :key="index + 1" 
-            :class="`option ${
-                getCurrentQuestion.selected == index + 1 // Tilføj 1 for at matche det nye indeks
-                ? index + 1 == getCurrentQuestion.answer
-                    ? 'correct'
-                    : 'wrong'
-                : ''
-            }${
-                getCurrentQuestion.selected != null &&
-                index + 1 != getCurrentQuestion.selected
-                ? 'disabled'
-                : ''
-            }`"
-            >
-            <input
-                type="radio"
-                :name="getCurrentQuestion.index"
-                :value="index + 1"
-                v-model="getCurrentQuestion.selected"
-                :disabled="getCurrentQuestion.selected"
-                @change="setAnswer"
-            />
-            <span>{{ option }}</span>
+          v-for="(option, index) in getCurrentQuestion.options"
+          :key="index"
+          :class="`option ${
+              getCurrentQuestion.selected === index
+              ? index === getCurrentQuestion.answer
+                  ? 'correct'
+                  : 'wrong'
+              : ''
+          }${
+              getCurrentQuestion.selected != null &&
+              index !== getCurrentQuestion.selected
+              ? 'disabled'
+              : ''
+          }`"
+          >
+          <input
+            type="radio"
+            :name="'question' + getCurrentQuestion.index"
+            :value="index"
+            v-model="getCurrentQuestion.selected"
+            @change="setAnswer(index)"
+          />
+          <span>{{ option }}</span>
         </label>
-
       </div>
       <button
         v-show="getCurrentQuestion.selected !== null || quizCompleted.value"
         @click="finishQuiz"
-        :disabled="!getCurrentQuestion.selected"
+        :disabled="getCurrentQuestion.selected === null"
       >
         {{
-          getCurrentQuestion.index == currentQuestions.length - 1
+          getCurrentQuestion.index === quizStore.questions.length - 1
             ? "Forsæt jagten"
-            : getCurrentQuestion.selected == null
-            ? "Select an option"
+            : getCurrentQuestion.selected === null
+            ? "Fortsæt"
             : "Next question"
         }}
       </button>
     </section>
 
-    <section v-else>
+    <section v-else-if="!loading">
       <h2>You have finished the quiz!</h2>
-      <p>Your score is {{ score }}/{{ currentQuestions.length }}</p>
+      <p>Your score is {{ score }}/{{ quizStore.questions.length }}</p>
       <router-link to="/pointshop">
         <button>Gå til shop</button>
       </router-link>
     </section>
 
     <div class="box" v-if="getCurrentQuestion.index === 0 && getCurrentQuestion.selected !== null && getCurrentQuestion.selected !== getCurrentQuestion.answer">
-        <p class="correct-answer">Det korrekte svar er <strong style="color: #2C5E36; font-weight: bold;">foråret</strong>.</p>
-      </div>
+      <p class="correct-answer">Det korrekte svar er <strong style="color: #2C5E36; font-weight: bold;">foråret</strong>.</p>
+    </div>
 
+    <div v-if="loading">
+      <p>Loading quiz...</p>
+    </div>
   </main>
 </template>
-
-<script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-
-// Define quiz questions with their options and correct answers
-const questions = [
-  {
-    question: "Hvilken årstid blomstrer kinesisk Paradisæbletræ?",
-    answer: 2, 
-    options: ["Sommer", "Forår", "Efterår", "Vinter"], 
-    selected: null, 
-  },
-];
-
-// Define reactive variables to manage the quiz state
-let currentQuestions = ref(questions); 
-const quizCompleted = ref(false); 
-const currentQuestion = ref(0); 
-
-// Compute the user's score based on selected answers
-const score = computed(() => {
-  let value = 0;
-  currentQuestions.value.forEach((q) => {
-    if (q.selected === q.answer) {
-      value++;
-    }
-  });
-  return value;
-});
-
-// Compute the current question being displayed
-const getCurrentQuestion = computed(() => {
-  let question = currentQuestions.value[currentQuestion.value];
-  question.index = currentQuestion.value;
-  return question;
-});
-
-// Function to set the selected answer for the current question
-const setAnswer = (e) => {
-  currentQuestions.value[currentQuestion.value].selected = parseInt(
-    e.target.value
-  );
-};
-
-// Function to finish the quiz and navigate to the appropriate route
-const finishQuiz = () => {
-  const isCorrect =
-    getCurrentQuestion.value.selected === getCurrentQuestion.value.answer;
-  if (isCorrect) {
-    router.push("/quiz/points");
-  } else {
-    router.push("/"); // Navigate to map 2 if answer is incorrect
-  }
-};
-</script>
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
