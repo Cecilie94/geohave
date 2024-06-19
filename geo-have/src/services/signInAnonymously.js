@@ -19,7 +19,7 @@ const signInAnonymously = async () => {
     const userRef = collection(db, "User");
     await addDoc(userRef, {
       uid: uid,
-      // You can add more fields if needed
+      points: 0,
       anonymous: true,
     });
 
