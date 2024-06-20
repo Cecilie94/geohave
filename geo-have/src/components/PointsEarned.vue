@@ -7,8 +7,10 @@ import { collection, doc, updateDoc, getDocs } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import ConfettiExplosion from 'vue-confetti-explosion';
 
+// initialise the store
 const pointsStore = usePointsStore();
-const points = ref(0);
+
+const points = ref(0); // local points state
 const UserId = ref("");
 const UserInfoRefId = ref("");
 const UserPointsOnline = ref(0);
@@ -28,7 +30,7 @@ const updatePoints = async () => {
 };
 
 onMounted(() => {
-  // Start the animation
+  //lifecycle hook to start points animation on component mount
   updatePoints();
 
   const auth = getAuth();
@@ -44,6 +46,7 @@ onMounted(() => {
   });
 });
 
+// Fetch user points from the database
 const fetchUserPoints = async (userId) => {
   try {
     const querySnapshotUserPoints = await getDocs(collection(db, 'User'));
@@ -58,10 +61,10 @@ const fetchUserPoints = async (userId) => {
   }
 };
 
+// function add points to the store and up dates user points in firestore
 const goToNextTask = async () => {
   try {
     await pointsStore.addPoints(points.value); // Add points to the store
-
     const userRef = doc(db, 'User', UserInfoRefId.value);
     await updateDoc(userRef, {
       points: UserPointsOnline.value + points.value,

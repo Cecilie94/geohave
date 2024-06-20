@@ -15,35 +15,42 @@ onMounted(async () => {
 const quizCompleted = ref(false);
 const currentQuestion = ref(0);
 
+// calculates the score
 const score = computed(() => {
   let value = 0;
+  // loop through all questions and check if the selected answer is correct
   quizStore.questions.forEach((q) => {
     if (q.selected === q.answer) {
       value += q.points;
     }
   });
+  // if the value is equal to the total points, the quiz is completed
   return value;
 });
 
+// get the current question
 const getCurrentQuestion = computed(() => {
   if (quizStore.questions.length > 0) {
     let question = quizStore.questions[currentQuestion.value];
     question.index = currentQuestion.value;
     return question;
   }
+  // if there are no questions, return an empty object
   return { question: '', options: [], selected: null, index: 0, answer: null };
 });
 
+// set the selected answer
 const setAnswer = (index) => {
   getCurrentQuestion.value.selected = index;
 };
 
+// finish the quiz
 const finishQuiz = () => {
   const isCorrect = getCurrentQuestion.value.selected === getCurrentQuestion.value.answer;
   if (isCorrect) {
     router.push("/quiz/points");
   } else {
-    router.push("/");
+    router.push("/skattejagt/kort");
   }
 };
 </script>
